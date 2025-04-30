@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import '../models/login_response.dart';
 
 class AuthService {
-  static const String baseUrl = 'http://localhost:3000';
+  static const String baseUrl = 'https://ola-api.onrender.com';
 
   Future<LoginResponse> login(String username, String password) async {
     try {
