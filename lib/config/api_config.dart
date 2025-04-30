@@ -1,5 +1,5 @@
 class ApiConfig {
-  static const String baseUrl = 'https://ola-api.onrender.com//proteaMetering';
+  static const String baseUrl = 'https://ola-api.onrender.com/proteaMetering';
   //static const String baseUrl = 'http://localhost:3000/proteaMetering';
 
   // Authentication Endpoints

@@ -44,7 +44,7 @@ class _BuyElectricityScreenState extends State<BuyElectricityScreen> {
         );
 
         if (!mounted) return;
-
+        print(response.body);
         if (response.statusCode == 200) {
           // Show the payment page in a new screen
           Navigator.of(context).push(
