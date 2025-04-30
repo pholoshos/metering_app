@@ -1,0 +1,26 @@
+name: protea_metering
+description: "A new Flutter project."
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: ^3.7.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  intl: ^0.18.1  # Add this line
+  http: ^1.1.0
+  webview_flutter: ^4.4.2
+  url_launcher: ^6.2.1
+  shared_preferences: ^2.5.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  assets:
+    - assets/images/icon.png
+  uses-material-design: true
