@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'login_screen.dart';
 import 'buy_electricity_screen.dart';
 import '../widgets/app_scaffold.dart';
+import 'smart_login_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -60,6 +61,24 @@ class HomeScreen extends StatelessWidget {
               ),
               child: const Text(
                 'Login to View Statement',
+                style: TextStyle(fontSize: 16),
+              ),
+            ),
+            const SizedBox(height: 16),
+            OutlinedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const SmartLoginScreen(),
+                  ),
+                );
+              },
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+              ),
+              child: const Text(
+                'Smart Complex Login',
                 style: TextStyle(fontSize: 16),
               ),
             ),

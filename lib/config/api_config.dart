@@ -1,14 +1,27 @@
 class ApiConfig {
-  static const String baseUrl = 'https://ola-api.onrender.com/proteaMetering';
-  //static const String baseUrl = 'http://localhost:3000/proteaMetering';
+  static const String _baseUrl = 'https://ola-api.onrender.com';
 
-  // Authentication Endpoints
-  static String oldPassword(String username) => '$baseUrl/old-password?username=$username';
-  static String resetPassword(String username) => '$baseUrl/request-new-password?username=$username';
-  static String login() => '$baseUrl/login';
-  
-  // Electricity Endpoints
-  static String buyElectricity() => '$baseUrl/buy-electricity';
-  
-  // Add more endpoint methods as needed
+  static String smartLogin() {
+    return '$_baseUrl/proteaMetering/login-v2';
+  }
+
+  static String login() {
+    return '$_baseUrl/proteaMetering/login';
+  }
+
+  static String buyElectricity() {
+    return '$_baseUrl/proteaMetering/buyElectricity';
+  }
+
+  static String oldPassword(String username) {
+    return '$_baseUrl/proteaMetering/oldPassword/$username';
+  }
+
+  static String resetPassword(String username) {
+    return '$_baseUrl/proteaMetering/resetPassword/$username';
+  }
+
+  static String topUp() {
+    return '$_baseUrl/proteaMetering/topup';
+  }
 }
