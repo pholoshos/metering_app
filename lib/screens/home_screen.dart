@@ -1,17 +1,60 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'login_screen.dart';
 import 'buy_electricity_screen.dart';
 import '../widgets/app_scaffold.dart';
 import 'smart_login_screen.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    _checkDefaultScreen();
+  }
+
+  Future<void> _checkDefaultScreen() async {
+    final prefs = await SharedPreferences.getInstance();
+    final defaultScreen = prefs.getString('default_screen');
+    
+    if (!mounted) return;
+
+    if (defaultScreen == 'smart_login') {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const SmartLoginScreen(),
+        ),
+      );
+    }
+  }
+
+  Future<void> _navigateToSmartLogin() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('default_screen', 'smart_login');
+    
+    if (!mounted) return;
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const SmartLoginScreen(),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return AppScaffold(
       title: 'Protea Metering',
       showBackButton: false,
+  
       child: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
@@ -66,14 +109,7 @@ class HomeScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             OutlinedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const SmartLoginScreen(),
-                  ),
-                );
-              },
+              onPressed: _navigateToSmartLogin,
               style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),
               ),
