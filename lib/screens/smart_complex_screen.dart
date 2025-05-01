@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:protea_metering/screens/home_screen.dart';
 import 'package:protea_metering/screens/smart_statements_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import '../models/smart_login_response.dart';
 import '../widgets/app_scaffold.dart';
@@ -159,36 +161,91 @@ class SmartComplexScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-              'Welcome, ${loginData.data.user.name}',
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text('Complex: ${loginData.data.user.complex}'),
-            Text('Unit: ${loginData.data.user.unit}'),
-            Text('Cell: ${loginData.data.user.cellNo}'),
-              ]),
-            
-            
-            ElevatedButton.icon(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => SmartStatementsScreen(
-                      token: loginData.token,
-                    ),
+                  'Welcome, ${loginData.data.user.name}',
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
                   ),
-                );
-              },
-              icon: const Icon(Icons.receipt_long),
-              label: const Text('View Statements'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
-                foregroundColor: Colors.white,
-              ),
+                ),
+                const SizedBox(height: 8),
+                Text('Complex: ${loginData.data.user.complex}'),
+                Text('Unit: ${loginData.data.user.unit}'),
+                Text('Cell: ${loginData.data.user.cellNo}'),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => SmartStatementsScreen(
+                          token: loginData.token,
+                        ),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.view_list),
+
+                  label: const Text('View Statements'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    foregroundColor: Colors.white,
+                    iconColor: Colors.white,
+                  ),
+                ),
+                ElevatedButton.icon(
+                  onPressed: () async {
+                    final shouldLogout = await showDialog<bool>(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: const Text('Logout'),
+                          content: const Text('Are you sure you want to logout? This will clear all your saved data.'),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context, false),
+                              child: const Text('Cancel'),
+                            ),
+                            ElevatedButton(
+                              onPressed: () => Navigator.pop(context, true),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.red,
+                                foregroundColor: Colors.white,
+                                iconColor: Colors.white,
+                              ),
+                              child: const Text('Logout'),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+
+                    if (shouldLogout == true) {
+                      final prefs = await SharedPreferences.getInstance();
+                      await prefs.clear();
+
+                      if (!context.mounted) return;
+
+                      Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(builder: (context) => const HomeScreen()),
+                        (route) => false,
+                      );
+                    }
+                  },
+                  icon: const Icon(Icons.logout),
+                  label: const Text('Logout'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.grey,
+                    foregroundColor: Colors.white,
+                    iconColor: Colors.white
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -255,10 +312,12 @@ class SmartComplexScreen extends StatelessWidget {
                 ElevatedButton.icon(
                   onPressed: () => _handleTopUp(context),
                   icon: const Icon(Icons.add),
+
                   label: const Text('Top Up'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,
                     foregroundColor: Colors.white,
+                    iconColor: Colors.white,
                   ),
                 ),
               ],
