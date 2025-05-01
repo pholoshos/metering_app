@@ -1,6 +1,5 @@
 class ApiConfig {
-  //static const String _baseUrl = 'https://ola-api.onrender.com';
-  static const String _baseUrl = 'http://localhost:3000';
+  static const String _baseUrl = 'https://ola-api.onrender.com';
 
   static String smartLogin() {
     return '$_baseUrl/proteaMetering/login-v2';
@@ -25,5 +24,9 @@ class ApiConfig {
 
   static String topUp() {
     return '$_baseUrl/proteaMetering/topup';
+  }
+
+  static String statementV2() {
+    return '$_baseUrl/proteaMetering/statementV2';
   }
 }

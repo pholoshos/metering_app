@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:protea_metering/screens/smart_statements_screen.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import '../models/smart_login_response.dart';
 import '../widgets/app_scaffold.dart';
@@ -23,14 +24,30 @@ class SmartComplexScreen extends StatelessWidget {
         final controller = TextEditingController();
         return AlertDialog(
           title: const Text('Top Up Amount'),
-          content: TextField(
-            controller: controller,
-            keyboardType: TextInputType.number,
-            decoration: const InputDecoration(
-              labelText: 'Amount (R)',
-              border: OutlineInputBorder(),
-              prefixIcon: Icon(Icons.attach_money),
-            ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextField(
+                controller: controller,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  labelText: 'Amount (R)',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.attach_money),
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'You can also top up via bank transfer:',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              const Text('Bank: FNB'),
+              const Text('Branch code: 252 445'),
+              const Text('Account Number: 6238 9132 946'),
+              const Text('Reference: Your-ref'),
+            ],
           ),
           actions: [
             TextButton(
@@ -115,7 +132,7 @@ class SmartComplexScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildUserInfo(),
+            _buildUserInfo(context),
             const SizedBox(height: 16),
             _buildCreditInfo(context),
             const SizedBox(height: 16),
@@ -130,15 +147,18 @@ class SmartComplexScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildUserInfo() {
+  Widget _buildUserInfo(context) {
     return Card(
-      child: Padding(
+      child: Container(
+        width: double.infinity,
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-
           children: [
-            Text(
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
               'Welcome, ${loginData.data.user.name}',
               style: const TextStyle(
                 fontSize: 24,
@@ -149,6 +169,27 @@ class SmartComplexScreen extends StatelessWidget {
             Text('Complex: ${loginData.data.user.complex}'),
             Text('Unit: ${loginData.data.user.unit}'),
             Text('Cell: ${loginData.data.user.cellNo}'),
+              ]),
+            
+            
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => SmartStatementsScreen(
+                      token: loginData.token,
+                    ),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.receipt_long),
+              label: const Text('View Statements'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green,
+                foregroundColor: Colors.white,
+              ),
+            ),
           ],
         ),
       ),
@@ -156,6 +197,45 @@ class SmartComplexScreen extends StatelessWidget {
   }
 
   Widget _buildCreditInfo(BuildContext context) {
+    // Extract numeric value from balance string (assuming format "R X.XX")
+    final balanceStr = loginData.data.credit.remaining;
+    final balance = double.tryParse(balanceStr.replaceAll('R ', '')) ?? 0.0;
+    final isZero = balance <= 0;
+    
+    // Extract maximum from total amount in summary
+    final maxAmountStr = loginData.data.summary.totalAmount;
+    final maxAmount = double.tryParse(maxAmountStr.replaceAll('R ', '')) ?? 2000.0;
+    
+    // Calculate progress value (0 to 1) based on balance
+    final progress = (balance / maxAmount).clamp(0.0, 1.0);
+
+    // Determine color based on percentage
+    Color getProgressColor() {
+      if (isZero) return Colors.grey[400]!;
+      
+      final percentage = progress * 100;
+      if (percentage >= 75) return Colors.green;
+      if (percentage >= 50) return Colors.yellow;
+      if (percentage >= 25) return Colors.orange;
+      return Colors.red;
+    }
+
+    // Get tip message based on percentage
+    String getTipMessage() {
+      final percentage = progress * 100;
+      if (isZero) {
+        return 'Critical: Your balance is depleted! Top up immediately to restore services. Contact support if you need assistance.';
+      } else if (percentage >= 75) {
+        return '✅ Excellent! Your balance is healthy. Consider enabling auto-payments to maintain this level and avoid any interruptions.';
+      } else if (percentage >= 50) {
+        return '👍 Good standing! Keep monitoring your usage patterns in the graphs below to optimize your consumption.';
+      } else if (percentage >= 25) {
+        return '⚠️ Notice: Your balance is getting low. Plan to top up within the next few days to maintain service.';
+      } else {
+        return '🚨 Warning: Critical low balance! Top up now to avoid service interruption. Consider setting up balance alerts.';
+      }
+    }
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -182,20 +262,79 @@ class SmartComplexScreen extends StatelessWidget {
                   ),
                 ),
               ],
-            ),
-            const SizedBox(height: 8),
-            Text(
-              loginData.data.credit.remaining,
-              style: const TextStyle(
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-                color: Colors.green,
+            ),           
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+              child: Center(
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.grey[100],
+                      ),
+                      child: SizedBox(
+                        height: 150,
+                        width: 150,
+                        child: CircularProgressIndicator(
+                          value: isZero ? 1.0 : progress,
+                          backgroundColor: Colors.grey[300],
+                          color: getProgressColor(),
+                          strokeWidth: 15,
+                        ),
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            balanceStr,
+                            style: TextStyle(
+                              fontSize: 28,
+                              fontWeight: FontWeight.bold,
+                              color: isZero ? Colors.grey[600] : getProgressColor(),
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'of $maxAmountStr',
+                            style: TextStyle(
+                              color: Colors.grey[600],
+                              fontSize: 12,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Last Updated:',
+                            style: TextStyle(
+                              color: Colors.grey[600],
+                              fontSize: 10,
+                            ),
+                          ),
+                          Text(
+                            loginData.data.credit.date,
+                            style: TextStyle(
+                              color: Colors.grey[600],
+                              fontSize: 10,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
+            const SizedBox(height: 4),
             Text(
-              'Last Updated: ${loginData.data.credit.date}',
+              getTipMessage(),
               style: TextStyle(
-                color: Colors.grey[600],
+                fontSize: 14,
+                color: getProgressColor(),
               ),
             ),
           ],
@@ -282,6 +421,15 @@ class SmartComplexScreen extends StatelessWidget {
   }
 
   Widget _buildGraphs() {
+    // Calculate averages
+    double electricityAvg = loginData.data.graphs.electricityConsumption
+        .map((e) => e.value.toDouble())
+        .reduce((a, b) => a + b) / loginData.data.graphs.electricityConsumption.length;
+    
+    double waterAvg = loginData.data.graphs.waterConsumption
+        .map((e) => e.value.toDouble())
+        .reduce((a, b) => a + b) / loginData.data.graphs.waterConsumption.length;
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -296,10 +444,23 @@ class SmartComplexScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
+            // Electricity Graph
+            const Text(
+              'Electricity Usage',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Text(
+              'Average: ${electricityAvg.toStringAsFixed(2)} kWh',
+              style: TextStyle(color: Colors.grey[600]),
+            ),
+            const SizedBox(height: 8),
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: SizedBox(
-                width: 800, // Fixed width for the chart
+                width: 800,
                 height: 200,
                 child: BarChart(
                   BarChartData(
@@ -330,8 +491,7 @@ class SmartComplexScreen extends StatelessWidget {
                           getTitlesWidget: (value, meta) {
                             if (value.toInt() >= 0 &&
                                 value.toInt() <
-                                    loginData.data.graphs.electricityConsumption
-                                        .length) {
+                                    loginData.data.graphs.electricityConsumption.length) {
                               return Text(loginData.data.graphs
                                   .electricityConsumption[value.toInt()].month);
                             }
@@ -340,6 +500,71 @@ class SmartComplexScreen extends StatelessWidget {
                         ),
                       ),
                     ),
+                    gridData: FlGridData(show: true),
+                    borderData: FlBorderData(show: true),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+            // Water Graph
+            const Text(
+              'Water Usage',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Text(
+              'Average: ${waterAvg.toStringAsFixed(2)} kL',
+              style: TextStyle(color: Colors.grey[600]),
+            ),
+            const SizedBox(height: 8),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: SizedBox(
+                width: 800,
+                height: 200,
+                child: BarChart(
+                  BarChartData(
+                    alignment: BarChartAlignment.spaceAround,
+                    maxY: 200,
+                    barGroups: loginData.data.graphs.waterConsumption
+                        .asMap()
+                        .entries
+                        .map((entry) {
+                      return BarChartGroupData(
+                        x: entry.key,
+                        barRods: [
+                          BarChartRodData(
+                            toY: entry.value.value.toDouble(),
+                            color: Colors.lightBlue,
+                            width: 16,
+                          ),
+                        ],
+                      );
+                    }).toList(),
+                    titlesData: FlTitlesData(
+                      leftTitles: AxisTitles(
+                        sideTitles: SideTitles(showTitles: true),
+                      ),
+                      bottomTitles: AxisTitles(
+                        sideTitles: SideTitles(
+                          showTitles: true,
+                          getTitlesWidget: (value, meta) {
+                            if (value.toInt() >= 0 &&
+                                value.toInt() <
+                                    loginData.data.graphs.waterConsumption.length) {
+                              return Text(loginData.data.graphs
+                                  .waterConsumption[value.toInt()].month);
+                            }
+                            return const Text('');
+                          },
+                        ),
+                      ),
+                    ),
+                    gridData: FlGridData(show: true),
+                    borderData: FlBorderData(show: true),
                   ),
                 ),
               ),
