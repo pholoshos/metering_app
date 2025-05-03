@@ -113,9 +113,9 @@ class _AppScaffoldState extends State<AppScaffold> {
         automaticallyImplyLeading: widget.showBackButton,
       ),
       body: widget.child,
-      floatingActionButton: widget.showFloatingActionButton
-          ? widget.floatingActionButton
-          : null,
+      // floatingActionButton: widget.showFloatingActionButton
+      //     ? widget.floatingActionButton
+      //     : null,
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         currentIndex: _selectedIndex,

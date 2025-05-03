@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:protea_metering/models/smart_login_response.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../config/api_config.dart';
 import 'dart:convert';
 
@@ -32,21 +34,33 @@ class _CustomerQueryScreenState extends State<CustomerQueryScreen> {
   }
 
   Future<void> _submitQuery() async {
-    if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isLoading = true);
 
     try {
+      //get stored user details
+      var storedUserPrefs = await SharedPreferences.getInstance();
+      var userDetails = storedUserPrefs.getString('userDetails');
+      SmartLoginResponse smartLoginResponse = SmartLoginResponse.fromJson(
+        jsonDecode(
+          userDetails ?? '',
+        ),
+      );
+
+      print(smartLoginResponse.data.user.name);
+
       final response = await http.post(
         Uri.parse('${ApiConfig.getBaseUrl()}/proteaMetering/customerQuery'),
         headers: {
-          'Authorization': 'Bearer ${widget.token}',
           'Content-Type': 'application/json',
         },
         body: jsonEncode({
-          'customerName': _customerNameController.text,
+          'customerName': smartLoginResponse.data.user.name,
           'meterNumber': _meterNumberController.text,
           'description': _descriptionController.text,
+          'cellNo': smartLoginResponse.data.user.cellNo,
+          'complexName': smartLoginResponse.data.user.name,
+          'unit' : smartLoginResponse.data.user.unit,
           'type': _selectedType,
         }),
       );
@@ -97,33 +111,6 @@ class _CustomerQueryScreenState extends State<CustomerQueryScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    TextFormField(
-                      controller: _customerNameController,
-                      decoration: const InputDecoration(
-                        labelText: 'Customer Name',
-                        border: OutlineInputBorder(),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter your name';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _meterNumberController,
-                      decoration: const InputDecoration(
-                        labelText: 'Meter Number',
-                        border: OutlineInputBorder(),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter your meter number';
-                        }
-                        return null;
-                      },
-                    ),
                     const SizedBox(height: 16),
                     DropdownButtonFormField<String>(
                       value: _selectedType,

@@ -241,6 +241,11 @@ class _SmartLoginScreenState extends State<SmartLoginScreen> {
         final loginData = SmartLoginResponse.fromJson(
           jsonDecode(response.body),
         );
+        
+        // Save the complete login response
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('login_response', response.body);
+        
         await SmartLoginService.saveLoginData(loginData);
 
         Navigator.pushReplacement(
@@ -281,6 +286,11 @@ class _SmartLoginScreenState extends State<SmartLoginScreen> {
           final loginData = SmartLoginResponse.fromJson(
             jsonDecode(response.body),
           );
+          
+          // Save the complete login response
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('login_response', response.body);
+          
           await SmartLoginService.saveLoginData(loginData);
 
           Navigator.pushReplacement(

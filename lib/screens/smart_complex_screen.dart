@@ -130,6 +130,8 @@ class SmartComplexScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return AppScaffold(
       title: 'Smart Complex',
+      showBackButton: true,
+      showFloatingActionButton: true,
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(
