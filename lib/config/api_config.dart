@@ -14,6 +14,10 @@ class ApiConfig {
     return '$_baseUrl/proteaMetering/buyElectricity';
   }
 
+  static String getBaseUrl() {
+    return _baseUrl;
+  }
+
   static String oldPassword(String username) {
     return '$_baseUrl/proteaMetering/oldPassword/$username';
   }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:protea_metering/screens/customer_query_screen.dart';
 import 'package:protea_metering/screens/home_screen.dart';
 import 'package:protea_metering/screens/smart_statements_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -129,6 +130,20 @@ class SmartComplexScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return AppScaffold(
       title: 'Smart Complex',
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => CustomerQueryScreen(
+                token: loginData.token,
+              ),
+            ),
+          );
+        },
+        backgroundColor: Colors.green,
+        child: const Icon(Icons.help_outline),
+      ),
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -256,12 +271,11 @@ class SmartComplexScreen extends StatelessWidget {
   Widget _buildCreditInfo(BuildContext context) {
     // Extract numeric value from balance string (assuming format "R X.XX")
     final balanceStr = loginData.data.credit.remaining;
-    final balance = double.tryParse(balanceStr.replaceAll('R ', '')) ?? 0.0;
+    final balance = double.tryParse(balanceStr.replaceAll(RegExp(r'[R\s,]'), '')) ?? 0.0;
     final isZero = balance <= 0;
     
-    // Extract maximum from total amount in summary
-    final maxAmountStr = loginData.data.summary.totalAmount;
-    final maxAmount = double.tryParse(maxAmountStr.replaceAll('R ', '')) ?? 2000.0;
+    // Set fixed maximum amount to 2000
+    const maxAmount = 2000.0;
     
     // Calculate progress value (0 to 1) based on balance
     final progress = (balance / maxAmount).clamp(0.0, 1.0);
@@ -272,7 +286,7 @@ class SmartComplexScreen extends StatelessWidget {
       
       final percentage = progress * 100;
       if (percentage >= 75) return Colors.green;
-      if (percentage >= 50) return Colors.yellow;
+      if (percentage >= 50) return const Color.fromARGB(255, 160, 147, 26);
       if (percentage >= 25) return Colors.orange;
       return Colors.red;
     }
@@ -281,15 +295,15 @@ class SmartComplexScreen extends StatelessWidget {
     String getTipMessage() {
       final percentage = progress * 100;
       if (isZero) {
-        return 'Critical: Your balance is depleted! Top up immediately to restore services. Contact support if you need assistance.';
+        return 'Critical: Your balance of R0.00 out of R2000.00 is depleted! Top up immediately to restore services. Contact support if you need assistance.';
       } else if (percentage >= 75) {
-        return '✅ Excellent! Your balance is healthy. Consider enabling auto-payments to maintain this level and avoid any interruptions.';
+        return '✅ Excellent! Your balance is above R1500.00 out of R2000.00. Consider enabling auto-payments to maintain this level and avoid any interruptions.';
       } else if (percentage >= 50) {
-        return '👍 Good standing! Keep monitoring your usage patterns in the graphs below to optimize your consumption.';
+        return '👍 Good standing! Your balance is above R1000.00 out of R2000.00. Keep monitoring your usage patterns in the graphs below to optimize your consumption.';
       } else if (percentage >= 25) {
-        return '⚠️ Notice: Your balance is getting low. Plan to top up within the next few days to maintain service.';
+        return '⚠️ Notice: Your balance is below R500.00 out of R2000.00. Plan to top up within the next few days to maintain service.';
       } else {
-        return '🚨 Warning: Critical low balance! Top up now to avoid service interruption. Consider setting up balance alerts.';
+        return '🚨 Warning: Critical low balance! Less than R250.00 out of R2000.00 remaining. Top up now to avoid service interruption. Consider setting up balance alerts.';
       }
     }
 
@@ -312,7 +326,6 @@ class SmartComplexScreen extends StatelessWidget {
                 ElevatedButton.icon(
                   onPressed: () => _handleTopUp(context),
                   icon: const Icon(Icons.add),
-
                   label: const Text('Top Up'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,
@@ -335,8 +348,8 @@ class SmartComplexScreen extends StatelessWidget {
                         color: Colors.grey[100],
                       ),
                       child: SizedBox(
-                        height: 150,
-                        width: 150,
+                        height: 160, // Slightly increased height
+                        width: 160,  // Slightly increased width
                         child: CircularProgressIndicator(
                           value: isZero ? 1.0 : progress,
                           backgroundColor: Colors.grey[300],
@@ -346,21 +359,24 @@ class SmartComplexScreen extends StatelessWidget {
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.all(24),
+                      padding: const EdgeInsets.all(20), // Reduced padding
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text(
-                            balanceStr,
-                            style: TextStyle(
-                              fontSize: 28,
-                              fontWeight: FontWeight.bold,
-                              color: isZero ? Colors.grey[600] : getProgressColor(),
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              balanceStr,
+                              style: TextStyle(
+                                fontSize: 24, // Slightly reduced font size
+                                fontWeight: FontWeight.bold,
+                                color: isZero ? Colors.grey[600] : getProgressColor(),
+                              ),
                             ),
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'of $maxAmountStr',
+                            'of R 2000.00',
                             style: TextStyle(
                               color: Colors.grey[600],
                               fontSize: 12,

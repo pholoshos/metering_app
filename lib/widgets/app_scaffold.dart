@@ -8,12 +8,20 @@ class AppScaffold extends StatefulWidget {
   final Widget child;
   final String title;
   final bool showBackButton;
+  final FloatingActionButton floatingActionButton;
+  final showFloatingActionButton = true;
 
   const AppScaffold({
     super.key,
     required this.child,
     required this.title,
     this.showBackButton = true,
+    showFloatingActionButton = false,
+    this.floatingActionButton = const FloatingActionButton(
+      onPressed: null,
+      tooltip: 'Increment',
+      child: Icon(Icons.add),
+    ),
   });
 
   @override
@@ -105,6 +113,9 @@ class _AppScaffoldState extends State<AppScaffold> {
         automaticallyImplyLeading: widget.showBackButton,
       ),
       body: widget.child,
+      floatingActionButton: widget.showFloatingActionButton
+          ? widget.floatingActionButton
+          : null,
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         currentIndex: _selectedIndex,
