@@ -1,3 +1,3 @@
-# protea_metering
+#metering App project
 
 A new Flutter project.
